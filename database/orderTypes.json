@@ -1,0 +1,24 @@
+[{
+    "id" : 1,
+    "estado" : "Nuevo"
+},
+{
+    "id" : 2,
+    "estado" : "Confirmado"
+},
+{
+    "id" : 3,
+    "estado" : "Preparando"
+},
+{
+    "id" : 4,
+    "estado" : "Enviando"
+},
+{
+    "id" : 5,
+    "estado" : "Entregado"
+},
+{
+    "id" : 6,
+    "estado" : "Cancelado"
+}]

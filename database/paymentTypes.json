@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "type": "efectivo",
+    "available": true
+  },
+  {
+    "id": 2,
+    "type": "tarjeta de credito",
+    "available": true
+  },
+  {
+    "id": 3,
+    "type": "tarjeta de debito",
+    "available": true
+  }
+]

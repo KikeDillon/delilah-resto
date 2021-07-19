@@ -1,0 +1,425 @@
+openapi: '3.0.2'
+info:
+  description: "Primer sprint"
+  title: Delilah Resto
+  version: '1.0'
+  contact:
+    email: "enriquemailush@gmail.com"
+servers:
+  - url: http://localhost:3001/
+tags:
+- name: "users"
+  description: "registro y login de usuarios"
+- name: "products"
+  description: "productos que se pueden seleccionar"
+- name: "orders"
+  description: "pedidos que realizan los usuarios"
+- name: "payments"
+  description: "tipos de pago que puede utilizar el usuario"
+paths:
+  /users:
+    get:
+      summary: Muestra los usuarios registrados.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado y administrador
+      tags: 
+      - users
+      description: Muestra usuarios registrados.      
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Crea un usuario.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users'
+      tags: 
+      - users
+      description: Registro nuevo usuario.      
+      responses:
+        '200':
+          description: OK
+  /users/{id}:
+    put:
+      summary: Modifica los datos de un usuario.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: id usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users'
+      tags: 
+      - users
+      description: modifica usuarios     
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Elimina un usuario.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: id usuario
+      tags: 
+      - users
+      description: elimina usuarios
+      responses:
+        '200':
+          description: OK
+
+  /products:
+    get:
+      summary: Muestra productos.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado y administrador
+      tags: 
+      - products
+      description: Muestra productos disponibles.      
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Crea un producto.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado y administrador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/products'
+      tags: 
+      - products
+      description: Crea nuevos productos.      
+      responses:
+        '200':
+          description: OK
+  /products/{id}:
+    put:
+      summary: Modifica un producto.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado y administrador
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: id producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/products'
+      tags: 
+      - products
+      description: modifica productos     
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Elimina una forma de pago.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado y administrador
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: id producto
+      tags: 
+      - products
+      description: elimina productos
+      responses:
+        '200':
+          description: OK
+  
+  /orders:
+    get:
+      summary: Muestra el menu.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado
+      tags: 
+      - orders
+      description: Muestra productos disponibles.      
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Crea un pedido.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/orders'
+      tags: 
+      - orders
+      description: Crea nuevos pedidos.      
+      responses:
+        '200':
+          description: OK
+  /orders/{id}:
+    put:
+      summary: Modifica un pedido.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: id pedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/orders'
+      tags: 
+      - orders
+      description: modifica pedidos
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Elimina un pedido.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: id pedido
+      tags: 
+      - orders
+      description: elimina pedidos
+      responses:
+        '200':
+          description: OK
+  /payments:
+    get:
+      summary: Muestra formas de pago.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado
+      tags: 
+      - payments
+      description: Muestra formas de pago.      
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Crea una forma de pago
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/payments'
+      tags: 
+      - payments
+      description: Crea nuevas formas de pago.      
+      responses:
+        '200':
+          description: OK
+  /payments/{id}:
+    put:
+      summary: Modifica una forma de pago.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: id forma de pago
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/payments'
+      tags: 
+      - payments
+      description: modifica formas de pago
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Elimina una forma de pago.
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schema: 
+            type: integer
+            description: id usuario logueado
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: id forma de pago
+      tags: 
+      - payments
+      description: elimina formas de pago
+      responses:
+        '200':
+          description: OK
+
+components:
+  schemas:
+    users:
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schemas:
+            type: integer
+            description: id usuario logueado
+      properties:
+        userName:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        password:
+          type: string
+        userType:
+          type: integer
+    products:
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schemas:
+            type: integer
+            description: id usuario logueado
+      properties:
+        productName:
+          type: string
+        price:
+          type: integer
+    orders:
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schemas:
+            type: integer
+            description: id usuario logueado
+      properties:
+        productId:
+          type: integer 
+        quantity:
+          type: integer
+        paymentType:
+          type: integer
+    payments:
+      parameters:
+        - in: header
+          name: idLog
+          required: true
+          schemas:
+            type: integer
+            description: id usuario logueado
+      properties:
+        type:
+          type: string
+        available:
+          type: boolean
