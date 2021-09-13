@@ -32,7 +32,7 @@ $ nodemon app.js
 ***
 * Para usar las funciones de Administrador crear un usuario y modificar el userType a 1. Los usuarios comunes son identificados con userType 0.
 
-## Testing
+## Testing para el registro de nuevos usuarios
 ***
 ```
 $ npm run dev
