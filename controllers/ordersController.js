@@ -1,112 +1,99 @@
-const fs = require('fs');
-const products = require('../database/products.json');
-const orders = require('../database/orders.json');
+const { getModel } = require('../database/index.js');
 
 module.exports = {
-    show: function showProducts(req, res) {
-        res.send(products);
+    show: async function showProducts(req, res) {
+        try {
+            const data = await getModel('Product').findAll();
+            res.status(200).send(data);
+        } catch (error) {
+            res.status(500).send({ message: error.message });
+        }
     },
-    create: function createOrder(req, res) {
-        if (orders !== null || orders !== undefined) {
-            let lastOrder = orders.pop();
-            orders.push(lastOrder);
-            detallePedido = [];
-            let pedido = {
+    history: async function showUserOrders(req, res) {
+        try {
+            const data = await getModel('Order').findAll({
+                where: {
+                    userId: req.params.id
+                }
+            });
+            if (data) {
+                res.status(200).send(data);
+            } else {
+                res.status(404).send('El usuario no tiene pedidos registrados.');
+            }
+        } catch (error) {
+            res.status(500).send({ message: error.message });
+        }
+    },
+    create: async function createOrder(req, res) {
+        try {
+            const produc = await getModel('Product').findOne({
+                where: {
+                    id: req.body.productId
+                }
+            });
+            const newOrder = getModel('Order');
+            const uslog = await getModel('User').findOne({
+                where: {
+                    id: req.user.id
+                }
+            });
+            const data = new newOrder({
+                userId: uslog.id,
                 productId: req.body.productId,
                 quantity: req.body.quantity,
-            };
-
-            detallePedido.push(pedido);
-            let newOrder = {
-                id: lastOrder.id + 1,
-                userId: req.headers.idlog,
-                detailOrder: detallePedido,
-                orderType: 1,
-                paymentType: req.body.paymentType,
-                closed: false
-            };
-            let ordUser = orders.find(function (i) {
-                return req.body.userId == i.userId;
+                subtotal: req.body.quantity * Number(produc.price),
+                closed: req.body.closed
             });
-            if (!ordUser) {
-                orders.push(newOrder);
-                let newOrderSTR = JSON.stringify(orders, null, 2);
-                fs.writeFileSync('./database/orders.json', newOrderSTR);
-            } else {
-
-                return res.send('Su pedido ya existe')
-            }
-        } else {
-
-            return res.send('Su pedido se ha cargado correctamente')
-        }
-    },
-    edit: function editOrder(req, res) {
-        let orderId = Number(req.params.id);
-        let addOrder = {
-            productId: req.body.productId,
-            quantity: req.body.quantity
-        };
-        /*let newOrder = orders.find(function (i) {
-            return i.id == orderId
-        });
-        if (newOrder != undefined) {
-          newOrder.detailOrder.push(addOrder);
-        };
-        let newArrayOrders = orders.map(function (i) {
-            if (i.id == orderId) {
-                return newOrder;
-            }
-            return i;
-        });
-        let arrayOrders = JSON.stringify(newArrayOrders, null, 2);
-        fs.writeFileSync('./database/orders.json', arrayOrders);
-        res.send('Se a Modificado el Pedido');}*/
-        let newOrder = orders.find(function (i) {
-            return i.id == orderId
-        });
-        if (newOrder != undefined && newOrder.closed == false) {
-            newOrder.detailOrder.push(addOrder);
-        };
-        newOrder.orderType = req.body.orderType;
-        newOrder.paymentType = req.body.paymentType;
-        newOrder.closed = req.body.closed;
-        let newArrayOrders;
-        if(newOrder.closed == false){
-            newArrayOrders = orders.map(function (i) {
-            if (i.id == orderId) {
-                return newOrder;
-            }
-            return i;
-        })}else{
-            return res.send('Su pedido ya esta cerrado, no puede modificarlo')
-        };
-        try {
-            fs.writeFileSync('./database/orders.json', JSON.stringify(newArrayOrders, null, 2));
-            res.send('Se ha Modificado el Pedido');
-            
+            const saved = await data.save()
+            res.status(201).send(saved);
         } catch (error) {
-            console.log(error)
-            res.send('Error algo anda mal');
+            console.error(error)
+            res.send('Algo salió mal').status(500);
         }
-        //let newOrders = JSON.stringify(newArrayOrders, null, 2);
-    },
-    delete: function deleteOrd(req, res) {
-        let deletedOrd = Number(req.params.id);
-        let orderNewFile = orders.filter(function (i) {
-            return (i.id != deletedOrd);
-        });
-        let ordSave = JSON.stringify(orderNewFile, null, 2);
-        fs.writeFileSync('./database/orders.json', ordSave);
-        res.send('El pedido fue eliminado correctamente');
-    },
-    showCart: function showC(req, res){
-
     }
+    ,
+    edit: async function modOrder(req, res) {
+        try {
+            const idOrd = Number(req.params.id)
+            const ord = getModel('Order');
+            const data = await ord.findByPk(idOrd);
+            const produc = await getModel('Product').findOne({
+                where: {
+                    id: data.productId
+                }
+            });
+            const priceProd = Number(produc.price);
+            if(data.closed == true){
+                return res.send('Este pedido ya está cerrado, no puede modificarlo')
+            }else{
+            const newProduct = await data.update({
+                productId: data.productId,
+                quantity: req.body.quantity,
+                subtotal: req.body.quantity * priceProd,
+                closed: req.body.closed
+            });
+            await newProduct.save();
+            res.send('Pedido actualizado').status(200);
+        }} catch (error) {
+            console.error(error)
+            res.send('Algo salió mal').status(500);
+        }
+    },
+    delete: async function deleteOrd(req, res) {
+        try {
+            const idOrd = Number(req.params.id)
+            const ord = await getModel('Order');
+            const data = await ord.findByPk(idOrd);
+            if(data.closed == true){
+                return res.send('Este pedido ya está cerrado, no puede eliminarlo')
+            }else{
+            await data.destroy();
+            res.send('Pedido eliminado').status(200);
+        }} catch (error) {
+            console.error(error)
+            res.send('Algo salió mal').status(500);
+        }
+    }
+
 }
-
-/*for (const order of orders) {
-    if(order.closed == true){
-        res.send('enviar a pago')
-    }
-}*/

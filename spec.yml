@@ -1,6 +1,6 @@
 openapi: '3.0.2'
 info:
-  description: "Primer sprint"
+  description: "Segundo sprint"
   title: Delilah Resto
   version: '1.0'
   contact:
@@ -9,9 +9,11 @@ servers:
   - url: http://localhost:3001/
 tags:
 - name: "users"
-  description: "registro y login de usuarios"
+  description: "registro de usuarios"
+- name: "login"
+  description: "login de usuarios registrados"
 - name: "products"
-  description: "productos que se pueden seleccionar"
+  description: "productos del restaurant"
 - name: "orders"
   description: "pedidos que realizan los usuarios"
 - name: "payments"
@@ -19,14 +21,9 @@ tags:
 paths:
   /users:
     get:
+      security:
+        - bearerAuth: []      
       summary: Muestra los usuarios registrados.
-      parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado y administrador
       tags: 
       - users
       description: Muestra usuarios registrados.      
@@ -49,14 +46,10 @@ paths:
           description: OK
   /users/{id}:
     put:
+      security:
+        - bearerAuth: []
       summary: Modifica los datos de un usuario.
       parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado
         - in: path
           name: id
           required: true
@@ -68,7 +61,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/users'
+              $ref: '#/components/schemas/usersEdit'
       tags: 
       - users
       description: modifica usuarios     
@@ -76,14 +69,10 @@ paths:
         '200':
           description: OK
     delete:
+      security:
+        - bearerAuth: []
       summary: Elimina un usuario.
       parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado
         - in: path
           name: id
           required: true
@@ -96,17 +85,25 @@ paths:
       responses:
         '200':
           description: OK
+  /login:
+    post:
+      summary: Login del usuario registrado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/login'
+      tags: 
+      - login
+      description: Muestra productos disponibles.      
+      responses:
+        '200':
+          description: Token
 
   /products:
     get:
       summary: Muestra productos.
-      parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado y administrador
       tags: 
       - products
       description: Muestra productos disponibles.      
@@ -114,14 +111,9 @@ paths:
         '200':
           description: OK
     post:
+      security:
+        - bearerAuth: []
       summary: Crea un producto.
-      parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado y administrador
       requestBody:
         required: true
         content:
@@ -136,14 +128,10 @@ paths:
           description: OK
   /products/{id}:
     put:
+      security:
+        - bearerAuth: []
       summary: Modifica un producto.
       parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado y administrador
         - in: path
           name: id
           required: true
@@ -163,14 +151,10 @@ paths:
         '200':
           description: OK
     delete:
+      security:
+        - bearerAuth: []
       summary: Elimina una forma de pago.
       parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado y administrador
         - in: path
           name: id
           required: true
@@ -187,13 +171,6 @@ paths:
   /orders:
     get:
       summary: Muestra el menu.
-      parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado
       tags: 
       - orders
       description: Muestra productos disponibles.      
@@ -201,14 +178,9 @@ paths:
         '200':
           description: OK
     post:
+      security:
+        - bearerAuth: []
       summary: Crea un pedido.
-      parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado
       requestBody:
         required: true
         content:
@@ -222,15 +194,28 @@ paths:
         '200':
           description: OK
   /orders/{id}:
-    put:
-      summary: Modifica un pedido.
+    get:
+      security:
+        - bearerAuth: []
+      summary: Muestra historial de pedidos.
       parameters:
-        - in: header
-          name: idLog
+        - in: path
+          name: id
           required: true
-          schema: 
+          schema:
             type: integer
-            description: id usuario logueado
+            description: id pedido
+      tags: 
+      - orders
+      description: muestra pedidos usuario
+      responses:
+        '200':
+          description: OK
+    put:
+      security:
+        - bearerAuth: []
+      summary: Usuario modifica el pedido.
+      parameters:
         - in: path
           name: id
           required: true
@@ -242,7 +227,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/orders'
+              $ref: '#/components/schemas/ordersEdit'
       tags: 
       - orders
       description: modifica pedidos
@@ -250,14 +235,10 @@ paths:
         '200':
           description: OK
     delete:
+      security:
+        - bearerAuth: []
       summary: Elimina un pedido.
       parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado
         - in: path
           name: id
           required: true
@@ -270,16 +251,33 @@ paths:
       responses:
         '200':
           description: OK
+  /orders/admin/{id}:
+    put:
+      security:
+        - bearerAuth: []
+      summary: Administrador modifica estado del pedido.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: id pedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ordersAdmin'
+      tags: 
+      - orders
+      description: Crea nuevos pedidos.      
+      responses:
+        '200':
+          description: OK
   /payments:
     get:
       summary: Muestra formas de pago.
-      parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado
       tags: 
       - payments
       description: Muestra formas de pago.      
@@ -287,14 +285,9 @@ paths:
         '200':
           description: OK
     post:
+      security:
+        - bearerAuth: []
       summary: Crea una forma de pago
-      parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado
       requestBody:
         required: true
         content:
@@ -309,14 +302,10 @@ paths:
           description: OK
   /payments/{id}:
     put:
+      security:
+        - bearerAuth: []
       summary: Modifica una forma de pago.
       parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado
         - in: path
           name: id
           required: true
@@ -336,14 +325,10 @@ paths:
         '200':
           description: OK
     delete:
+      security:
+        - bearerAuth: []
       summary: Elimina una forma de pago.
       parameters:
-        - in: header
-          name: idLog
-          required: true
-          schema: 
-            type: integer
-            description: id usuario logueado
         - in: path
           name: id
           required: true
@@ -356,17 +341,82 @@ paths:
       responses:
         '200':
           description: OK
-
+  /address:
+    get:
+      security:
+          - bearerAuth: []
+      summary: Muestra domicilios de usuario logueado.
+      tags: 
+      - address
+      description: Muestra agenda de direcciones al usuario logueado.      
+      responses:
+        '200':
+          description: OK
+    post:
+      security:
+        - bearerAuth: []
+      summary: Crea un domicilio en la agenda del usuario.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/address'
+      tags: 
+      - address
+      description: Crea nuevos domicilios.      
+      responses:
+        '200':
+          description: OK
+  /address/{id}:
+    put:
+      security:
+        - bearerAuth: []
+      summary: Modifica un domicilio.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: id domicilio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/address'
+      tags: 
+      - address
+      description: modifica domicilios.
+      responses:
+        '200':
+          description: OK
+    delete:
+      security:
+        - bearerAuth: []
+      summary: Elimina un domicilio.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: id domicilio
+      tags: 
+      - address
+      description: elimina domicilios
+      responses:
+        '200':
+          description: OK        
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     users:
-      parameters:
-        - in: header
-          name: idLog
-          required: true
-          schemas:
-            type: integer
-            description: id usuario logueado
       properties:
         userName:
           type: string
@@ -380,46 +430,55 @@ components:
           type: string
         password:
           type: string
-        userType:
-          type: integer
+    usersEdit:
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        password:
+          type: string
+    login:
+      properties:
+        userName:
+          type: string
+        password:
+          type: string
     products:
-      parameters:
-        - in: header
-          name: idLog
-          required: true
-          schemas:
-            type: integer
-            description: id usuario logueado
       properties:
         productName:
           type: string
         price:
           type: integer
     orders:
-      parameters:
-        - in: header
-          name: idLog
-          required: true
-          schemas:
-            type: integer
-            description: id usuario logueado
       properties:
         productId:
           type: integer 
         quantity:
           type: integer
-        paymentType:
+        closed:
+          type: boolean
+    ordersEdit:
+      properties: 
+        quantity:
+          type: integer
+        closed:
+          type: boolean
+    ordersAdmin:
+      properties:
+        orderType:
           type: integer
     payments:
-      parameters:
-        - in: header
-          name: idLog
-          required: true
-          schemas:
-            type: integer
-            description: id usuario logueado
       properties:
         type:
           type: string
         available:
           type: boolean
+    address:
+      properties:
+        address:
+          type: string

@@ -1,83 +1,94 @@
-const fs = require('fs');
-const users = require('../database/users.json');
+const { encript } = require('../middlewares/midjwt.js');
+const models = require('../database');
 
 module.exports = {
 
-    show: function showUsers(req, res){
-        res.send(users)
-    },
-
-    register: function userRegister(req, res){
-        if (users !== null || users !== undefined){
-            let lastUser = users.pop();
-            users.push(lastUser);
-            let newUser = {
-                id : lastUser.id + 1,
-                userName : req.body.userName,
-                fullName : req.body.fullName,
-                email : req.body.email,
-                phone : req.body.phone,
-                address : req.body.address,
-                password : req.body.password,
-                usertype : 0
-            };
-            let user = users.find (function(i){                    
-                return req.body.email == i.email;           
-            });
-            if (!user){         
-                users.push (newUser);
-                let newUserSTR = JSON.stringify(users,null,2);
-                fs.writeFileSync('./database/users.json', newUserSTR);
-                res.send('Registro exitoso')
-            }else{
-
-                return res.send('El email ya se encuentra registrado')
-            }
+    show: async function showUsers(req, res) {
+        if (req.user.userType == 1) {
+            const data = await models.getModel('User').findAll();
+            return res.status(200).send(data);
+        } else {
+            return res.status(500).send('No esta autorizado.');
         }
     },
-    login: function userLogin(req, res){
-            let user = users.find (function(i){                    
-                return req.body.email == i.email;           
+    register: async function userRegister(req, res) {
+        try {
+            const newUser = models.getModel('User');
+            const data = await newUser.create({
+                userName: req.body.userName,
+                fullName: req.body.fullName,
+                email: req.body.email,
+                phone: req.body.phone,
+                address: req.body.address,
+                password: encript(req.body.password),
+                userType: 0,
+                suspended: false
             });
-            let password = users.find(function(i){
-                return req.body.password === i.password;
-            });
-
-            if (user && password){                                             
-                res.send('Bienvenido ' + user.fullName)
-    }else if(!user){
-        res.send('El usuario no existe')
-    }else if(!password){
-        res.send('La contraseña es incorrecta')
+            res.status(201).send(data);
+        } catch (error) {
+            console.error(error)
+            res.send('Algo salió mal').status(500);
+        }
     }
-  },
-  edit: function userEdit(req, res){
-    let userId = Number(req.params.id);
-    let newArrayUsers = users.map(function (i) {
-        if (i.id == userId) {
-            let newUser = {
-                userName : req.body.userName,
-                fullName : req.body.fullName,
-                email : req.body.email,
-                phone : req.body.phone,
-                address : req.body.address,
-                password : req.body.password,
-            };
-            return newUser;
+    ,
+    login: function userLogin(req, res) {
+        try{
+        res.status(200).send({
+            status: 'Bienvenido/a ' + req.body.userName,
+            token: req.token
+        })
+    }catch(error){
+        console.log(error);
+        res.send('Algo no salió bien').status(500);
+    }
+    },
+    edit: async function modUser(req, res) {
+        try {
+            const idUser = Number(req.params.id)
+            const user = models.getModel('User');
+            const data = await user.findByPk(idUser);
+            const newUser = await data.update({
+                userName: data.userName,
+                fullName: req.body.fullName,
+                email: req.body.email,
+                phone: req.body.phone,
+                address: req.body.address,
+                password: encript(req.body.password),
+                userType: 0
+            });
+            await newUser.save();
+            res.send('Usuario actualizado').status(200);
+        } catch (error) {
+            console.error(error)
+            res.send('Algo salió mal').status(500);
         }
-        return i;
-    });
-    let arrayUsers = JSON.stringify(newArrayUsers, null, 2);
-    fs.writeFileSync('./database/users.json', arrayUsers);
-    res.send('Se ha/n modificado lo/s datos del usuario correctamente');
-},
-delete: function deleteProd(req, res) {
-    let deletedUser = Number(req.params.id);
-    let userNewFile = users.filter(function (i) {
-        return (i.id != deletedUser);
-    });
-    let userSave = JSON.stringify(userNewFile, null, 2);
-    fs.writeFileSync('./database/users.json', userSave);
-    res.send('El usuario fue eliminado correctamente');
-}
+    },
+    admin: async function adminUser(req, res){
+        try {
+            const idUser = Number(req.params.id)
+            const user = models.getModel('User');
+            const data = await user.findByPk(idUser);
+            const newUser = await data.update({
+                userType: req.body.userType,
+                suspended: req.body.suspended
+            });
+            await newUser.save();
+            res.send('Usuario actualizado').status(200);
+        } catch (error) {
+            console.error(error)
+            res.send('Algo salió mal').status(500);
+        }
+    },
+    delete: async function deleteUser(req, res) {
+        try {
+            const idUser = Number(req.params.id)
+            const prod = await models.getModel('User');
+            const data = await prod.findByPk(idUser);
+            await data.destroy();
+            res.send('Usuario eliminado').status(200);
+        } catch (error) {
+            console.error(error)
+            res.send('Algo salió mal').status(500);
+        }
+    }
 }
