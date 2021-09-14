@@ -24,10 +24,24 @@ module.exports = {
                 userType: 0,
                 suspended: false
             });
+            const contName = await getModel('User').findOne({
+                where: {
+                    userName: req.body.userName
+                }
+            });
+            const contEmail = await getModel('User').findOne({
+                where: {
+                    userName: req.body.email
+                }
+            });
+            if(!contName && !contEmail){
             res.status(201).send(data);
+        }else{
+            res.send('El usuario y/o email ya existe')
+        }
         } catch (error) {
             console.error(error)
-            res.send('Algo salió mal').status(500);
+            res.status(500).send('Los datos cargados ya están registrados o no son correctos');
         }
     }
     ,
